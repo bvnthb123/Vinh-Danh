@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vinh Danh</title>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  overflow: hidden;
+  color: white;
+}
+
+/* màn nhập */
+#inputScreen {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  background: #111;
+}
+
+input {
+  padding: 12px;
+  font-size: 18px;
+  border-radius: 8px;
+  border: none;
+}
+
+button {
+  padding: 12px 25px;
+  margin-top: 10px;
+  border-radius: 8px;
+  border: none;
+  background: gold;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* màn vinh danh */
+#honorScreen {
+  display: none;
+  height: 100vh;
+  text-align: center;
+  position: relative;
+  background-size: cover;
+  background-position: center;
+}
+
+.overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+}
+
+.content {
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* ảnh */
+.avatar {
+  width: 320px;
+  height: 400px;
+  border-radius: 50%;
+  border: 6px solid gold;
+  box-shadow: 0 0 40px gold;
+  animation: glow 1.5s infinite alternate;
+}
+
+@keyframes glow {
+  from { box-shadow: 0 0 20px gold; }
+  to { box-shadow: 0 0 80px gold; }
+}
+
+/* text */
+.title {
+  font-size: 32px;
+  margin-top: 20px;
+}
+
+.fadeIn {
+  animation: fadeIn 1s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px);}
+  to { opacity: 1; transform: translateY(0);}
+}
+</style>
+</head>
+
+<body>
+
+<!-- INPUT -->
+<div id="inputScreen">
+  <h2>🎯 Nhập tên của bạn</h2>
+  <input id="name" placeholder="Tên của bạn">
+  <button onclick="start()">BẮT ĐẦU</button>
+</div>
+
+<!-- HONOR -->
+<div id="honorScreen">
+  <div class="overlay"></div>
+
+  <div class="content">
+    <img id="avatar" class="avatar">
+    <div id="text" class="title"></div>
+  </div>
+</div>
+
+<audio id="music" src="music.mp3"></audio>
+
+<script>
+
+// 🎨 mapping nền theo hạng mục
+const backgrounds = {
+  "1": "nen1.jpg",
+};
+
+let data = {};
+
+// 🔥 LOAD GOOGLE SHEET
+async function loadData() {
+
+  const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSVauF5Yc50nuFu26X_7P3LeZKLVb3WFAJYycWhJSSYxEjkk6rG3fj8BUCIwyn8_pVLhvSwV2a1NDwl/pub?gid=0&single=true&output=csv";
+
+  try {
+    const res = await fetch(url);
+    const text = await res.text();
+
+    console.log("CSV:", text);
+
+    const rows = text.split(/\r?\n/).slice(1);
+
+    rows.forEach(row => {
+      if (!row.trim()) return;
+
+      const cols = row.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g);
+
+      let name = cols[0]?.trim().toLowerCase();
+      let category = cols[1]?.trim().toLowerCase();
+      let textReward = cols[2]?.trim();
+      let img = cols[3]?.trim();
+
+      if (!data[category]) {
+        data[category] = { users: {} };
+      }
+
+      data[category].users[name] = {
+        text: textReward,
+        img: img
+      };
+    });
+
+    console.log("DATA:", data);
+
+  } catch (err) {
+    console.error("Lỗi load:", err);
+  }
+}
+
+loadData();
+
+
+// 🚀 START
+async function start() {
+
+  if (Object.keys(data).length === 0) {
+    alert("⏳ Đang tải dữ liệu...");
+    return;
+  }
+
+  let raw = document.getElementById("name").value.trim();
+  let name = raw.toLowerCase();
+
+  if (!name) {
+    alert("Nhập tên!");
+    return;
+  }
+
+  document.getElementById("inputScreen").style.display = "none";
+  document.getElementById("honorScreen").style.display = "block";
+
+  let avatar = document.getElementById("avatar");
+  let text = document.getElementById("text");
+
+  let foundAwards = [];
+
+  for (let key in data) {
+    if (data[key].users[name]) {
+      foundAwards.push({
+        category: key,
+        text: data[key].users[name].text,
+        img: data[key].users[name].img
+      });
+    }
+  }
+
+  // ❌ không có
+  if (foundAwards.length === 0) {
+    avatar.src = "default.jpg";
+    text.innerHTML = `✨ ${raw} - CÙNG CỐ GẮNG NHÉ ✨`;
+    startFirework();
+    document.getElementById("music").play();
+    return;
+  }
+
+  // 🖼️ ảnh
+  avatar.src = foundAwards[0].img;
+
+  text.innerHTML = "";
+
+  // 🎬 HIỆN TỪNG DANH HIỆU
+  for (let i = 0; i < foundAwards.length; i++) {
+
+    let award = foundAwards[i];
+
+    // 🎨 đổi nền theo category
+    document.getElementById("honorScreen").style.backgroundImage =
+      `url('${backgrounds[award.category] || "nen1.jpg"}')`;
+
+    await new Promise(resolve => {
+
+      setTimeout(() => {
+
+        text.innerHTML += `
+          <div class="fadeIn" style="margin-top:20px;">
+            🏆 ${award.category.toUpperCase()}<br>
+            ${award.text}
+          </div>
+        `;
+
+        startFirework();
+
+        resolve();
+
+      }, 1200);
+    });
+  }
+
+  document.getElementById("music").play();
+}
+
+
+// 🎆 PHÁO HOA
+let fireworkInterval;
+
+function startFirework() {
+
+  if (fireworkInterval) return;
+
+  fireworkInterval = setInterval(() => {
+
+    confetti({ particleCount: 10, angle: 60, spread: 80, origin: { x: 0, y: 1 } });
+    confetti({ particleCount: 10, angle: 120, spread: 80, origin: { x: 1, y: 1 } });
+    confetti({ particleCount: 10, angle: 300, spread: 80, origin: { x: 0, y: 0 } });
+    confetti({ particleCount: 10, angle: 240, spread: 80, origin: { x: 1, y: 0 } });
+
+  }, 300);
+}
+
+</script>
+
+</body>
+</html>
