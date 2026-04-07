@@ -30,13 +30,10 @@ body {
   display: none;
   height: 100vh;
   background: url('nen1.jpg') no-repeat center center/cover;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
+  position: relative;
 }
 
+/* overlay */
 .overlay {
   position: absolute;
   width: 100%;
@@ -44,20 +41,54 @@ body {
   background: rgba(0,0,0,0.5);
 }
 
-/* CONTENT */
+/* 🔦 SPOTLIGHT */
+.spotlight {
+  position: absolute;
+  top: -20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 500px;
+  height: 800px;
+
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 215, 0, 0.5) 0%,
+    rgba(255, 215, 0, 0.2) 30%,
+    rgba(255, 215, 0, 0.05) 60%,
+    transparent 80%
+  );
+
+  filter: blur(20px);
+  animation: lightMove 3s ease-in-out infinite alternate;
+}
+
+@keyframes lightMove {
+  0% { transform: translateX(-55%) scale(1); }
+  50% { transform: translateX(-45%) scale(1.1); }
+  100% { transform: translateX(-55%) scale(1); }
+}
+
+/* 🎯 CENTER CHUẨN */
 .container {
-  position: relative;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
   z-index: 2;
 }
 
 /* AVATAR */
 .avatar {
   width: 300px;
-  height: 400px;
+  height: 300px;
   border-radius: 50%;
   border: 6px solid gold;
-  box-shadow: 0 0 50px gold;
+  box-shadow: 0 0 60px gold;
   margin-bottom: 20px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
   animation: glow 1.5s infinite alternate;
 }
 
@@ -116,14 +147,17 @@ button {
 
 <body>
 
+<!-- INPUT -->
 <div id="inputScreen">
   <h2>🎯 Nhập tên của bạn</h2>
   <input id="name" placeholder="Tên của bạn">
   <button onclick="start()">BẮT ĐẦU</button>
 </div>
 
+<!-- HONOR -->
 <div id="honorScreen">
   <div class="overlay"></div>
+  <div class="spotlight"></div>
 
   <div class="container">
     <img id="avatar" class="avatar">
@@ -175,11 +209,12 @@ async function start() {
   if (!name) return alert("Nhập tên!");
 
   document.getElementById("inputScreen").style.display = "none";
-  document.getElementById("honorScreen").style.display = "flex";
+  document.getElementById("honorScreen").style.display = "block";
 
   let avatar = document.getElementById("avatar");
   let text = document.getElementById("text");
 
+  // không có dữ liệu
   if (!data[name]) {
 
     avatar.style.display = "none";
