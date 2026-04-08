@@ -10,8 +10,9 @@
 <style>
 body {
   margin: 0;
-  font-family: Arial;
+  height: 100dvh; /* chuẩn mobile */
   overflow: hidden;
+  font-family: Arial;
   background: black;
   color: white;
 }
@@ -19,8 +20,7 @@ body {
 /* INTRO */
 #intro {
   position: fixed;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   background: black;
   display: flex;
   justify-content: center;
@@ -31,7 +31,7 @@ body {
 
 /* INPUT */
 #inputScreen {
-  height: 100vh;
+  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -41,19 +41,19 @@ body {
 /* MAIN */
 #honorScreen {
   display: none;
-  height: 100vh;
+  position: fixed;
+  inset: 0;
   background: url('nen1.jpg') center/cover no-repeat;
-  position: relative;
 }
 
+/* overlay */
 .overlay {
   position: absolute;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   background: rgba(0,0,0,0.6);
 }
 
-/* SPOTLIGHT */
+/* spotlight */
 .spotlight {
   position: absolute;
   width: 600px;
@@ -71,7 +71,7 @@ body {
   to { transform: translateX(-40%) scale(1.2); }
 }
 
-/* PARTICLES */
+/* particles */
 .particle {
   position: absolute;
   width: 4px;
@@ -86,10 +86,10 @@ body {
   to { transform: translateY(-10vh); opacity:1; }
 }
 
-/* CENTER */
+/* center */
 .container {
   position: absolute;
-  top: 50%;
+  top: 48%;
   left: 50%;
   transform: translate(-50%, -50%) scale(0.95);
   text-align: center;
@@ -101,22 +101,30 @@ body {
   transform: translate(-50%, -50%) scale(1);
 }
 
-/* AVATAR FIX MOBILE */
-.avatar {
-  width: clamp(160px, 45vw, 260px);
-  height: clamp(180px, 45vw, 280px);
+/* 🔥 AVATAR TRÒN KHÔNG BỊ CẮT */
+.avatarWrap {
+  width: clamp(180px, 50vw, 260px);
+  height: clamp(180px, 50vw, 260px);
+  margin: auto;
   border-radius: 50%;
   border: 6px solid gold;
   box-shadow: 0 0 60px gold, 0 0 120px rgba(255,215,0,0.4);
-  object-fit: cover;
+  overflow: hidden;
+  background: white;
 }
 
-/* TEXT */
+.avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top; /* 🔥 không cắt đầu */
+}
+
+/* text */
 .name {
   font-size: clamp(26px, 6vw, 44px);
   font-weight: bold;
   margin-top: 20px;
-  text-align: center;
   word-break: break-word;
 }
 
@@ -130,13 +138,13 @@ body {
   color: gold;
 }
 
-/* ANIMATION */
+/* animation */
 @keyframes fadeInUp {
   from { opacity:0; transform: translateY(20px); }
   to { opacity:1; transform: translateY(0); }
 }
 
-/* INPUT */
+/* input */
 input {
   padding: 12px;
   font-size: 18px;
@@ -171,7 +179,11 @@ button {
   <div class="spotlight"></div>
 
   <div class="container" id="container">
-    <img id="avatar" class="avatar">
+    
+    <div class="avatarWrap">
+      <img id="avatar" class="avatar">
+    </div>
+
     <div id="text"></div>
   </div>
 </div>
@@ -188,7 +200,7 @@ function normalize(str) {
   return str.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
-// LOAD DATA
+// load data
 async function loadData() {
   const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSVauF5Yc50nuFu26X_7P3LeZKLVb3WFAJYycWhJSSYxEjkk6rG3fj8BUCIwyn8_pVLhvSwV2a1NDwl/pub?output=csv";
 
@@ -222,7 +234,7 @@ async function loadData() {
 
 loadData();
 
-// PARTICLES
+// particles
 function createParticles() {
   for (let i = 0; i < 40; i++) {
     let p = document.createElement("div");
@@ -233,7 +245,7 @@ function createParticles() {
   }
 }
 
-// START
+// start
 async function start() {
 
   if (!loaded) return alert("Đang tải dữ liệu...");
@@ -282,7 +294,7 @@ async function start() {
   startFirework();
 }
 
-// FIREWORK
+// firework
 function startFirework() {
   setInterval(() => {
     confetti({
