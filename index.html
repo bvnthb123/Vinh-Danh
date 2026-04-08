@@ -25,8 +25,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 28px;
-  letter-spacing: 2px;
+  font-size: 24px;
   z-index: 10;
 }
 
@@ -92,8 +91,9 @@ body {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) scale(0.9);
+  transform: translate(-50%, -50%) scale(0.95);
   text-align: center;
+  width: 90%;
   transition: 0.6s;
 }
 
@@ -101,40 +101,36 @@ body {
   transform: translate(-50%, -50%) scale(1);
 }
 
-/* AVATAR */
+/* AVATAR FIX MOBILE */
 .avatar {
-  width: 260px;
-  height: 380px;
+  width: clamp(160px, 45vw, 260px);
+  height: clamp(160px, 45vw, 260px);
   border-radius: 50%;
   border: 6px solid gold;
-  box-shadow: 0 0 80px gold;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% { box-shadow: 0 0 40px gold; }
-  50% { box-shadow: 0 0 80px gold; }
-  100% { box-shadow: 0 0 40px gold; }
+  box-shadow: 0 0 60px gold, 0 0 120px rgba(255,215,0,0.4);
+  object-fit: cover;
 }
 
 /* TEXT */
 .name {
-  font-size: 44px;
+  font-size: clamp(26px, 6vw, 44px);
   font-weight: bold;
   margin-top: 20px;
+  text-align: center;
+  word-break: break-word;
 }
 
 .title {
-  font-size: 28px;
+  font-size: clamp(18px, 4.5vw, 28px);
   margin-top: 8px;
 }
 
 .reward {
-  font-size: 24px;
+  font-size: clamp(16px, 4vw, 24px);
   color: gold;
 }
 
-/* animation danh hiệu */
+/* ANIMATION */
 @keyframes fadeInUp {
   from { opacity:0; transform: translateY(20px); }
   to { opacity:1; transform: translateY(0); }
@@ -188,7 +184,6 @@ button {
 let data = {};
 let loaded = false;
 
-// chuẩn hóa tên
 function normalize(str) {
   return str.trim().toLowerCase().replace(/\s+/g, " ");
 }
@@ -260,19 +255,16 @@ async function start() {
     return;
   }
 
-  // avatar fallback
   avatar.src = data[name][0].img || "https://i.imgur.com/1X6Yh6X.png";
   avatar.onerror = () => avatar.src = "https://i.imgur.com/1X6Yh6X.png";
 
   document.getElementById("music").play();
   container.classList.add("show");
 
-  // sound 1 lần
   let whoosh = document.getElementById("whoosh");
   whoosh.currentTime = 0;
   whoosh.play();
 
-  // render ALL danh hiệu
   let listHTML = data[name].map((item, index) => {
     return `
       <div style="margin-top:15px; opacity:0; animation: fadeInUp 0.6s forwards; animation-delay:${index * 0.3}s">
