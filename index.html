@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vinh Danh</title>
+<title>Vinh Danh Cinematic</title>
 
 <style>
 * {
@@ -15,7 +15,7 @@
 
 body {
   height: 100vh;
-  background: radial-gradient(circle at center, #0b1a3a, #020617);
+  background: radial-gradient(circle at center, #020617, #000);
   overflow: hidden;
   display: flex;
   justify-content: center;
@@ -23,35 +23,60 @@ body {
   color: white;
 }
 
-/* Container */
+/* PARTICLE nền */
+.bg-particles span {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: rgba(255,255,255,0.6);
+  animation: float 10s linear infinite;
+}
+
+@keyframes float {
+  from { transform: translateY(100vh); opacity: 0; }
+  to { transform: translateY(-10vh); opacity: 1; }
+}
+
+/* CONTAINER */
 .container {
   text-align: center;
   position: relative;
+  opacity: 0;
+  transform: scale(0.8);
+  animation: intro 1.5s ease forwards;
+  animation-delay: 0.5s;
 }
 
-/* Ánh sáng từ trên */
-.light {
+@keyframes intro {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* SPOTLIGHT quét */
+.spotlight {
   position: absolute;
-  top: -200px;
+  top: -250px;
   left: 50%;
   transform: translateX(-50%);
-  width: 300px;
-  height: 400px;
+  width: 400px;
+  height: 500px;
   background: radial-gradient(ellipse at center, rgba(255,255,255,0.25), transparent);
-  filter: blur(40px);
-  animation: lightMove 3s infinite alternate;
+  filter: blur(60px);
+  animation: sweep 4s infinite alternate;
 }
 
-@keyframes lightMove {
-  from { opacity: 0.4; transform: translateX(-50%) scale(1); }
-  to { opacity: 0.8; transform: translateX(-50%) scale(1.2); }
+@keyframes sweep {
+  0% { transform: translateX(-60%) rotate(-5deg); }
+  100% { transform: translateX(-40%) rotate(5deg); }
 }
 
-/* Ảnh vinh danh */
+/* AVATAR */
 .avatar-wrapper {
   position: relative;
-  width: 180px;
-  height: 180px;
+  width: 200px;
+  height: 200px;
   margin: auto;
 }
 
@@ -59,66 +84,88 @@ body {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  border: 4px solid gold;
+  border: 5px solid gold;
   object-fit: cover;
-  z-index: 2;
   position: relative;
+  z-index: 2;
+  animation: pulse 2s infinite;
 }
 
-/* Vòng sáng xoay */
+@keyframes pulse {
+  0%,100% { box-shadow: 0 0 20px gold; }
+  50% { box-shadow: 0 0 40px gold; }
+}
+
+/* RING xoay */
 .ring {
   position: absolute;
-  top: -10px;
-  left: -10px;
-  width: 200px;
-  height: 200px;
+  top: -15px;
+  left: -15px;
+  width: 230px;
+  height: 230px;
   border-radius: 50%;
-  border: 2px dashed rgba(255, 215, 0, 0.6);
+  border: 2px dashed gold;
   animation: spin 6s linear infinite;
 }
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* Line ánh sáng bay */
 .line {
   position: absolute;
-  width: 220px;
-  height: 220px;
+  top: -15px;
+  left: -15px;
+  width: 230px;
+  height: 230px;
   border-radius: 50%;
-  border: 2px solid transparent;
   border-top: 2px solid cyan;
   animation: spin 3s linear infinite reverse;
 }
 
-/* Text */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* TEXT */
 .name {
-  font-size: 22px;
-  margin-top: 20px;
+  font-size: 26px;
+  margin-top: 25px;
   font-weight: bold;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: textUp 1s forwards;
+  animation-delay: 1.2s;
 }
 
 .title {
-  font-size: 16px;
-  opacity: 0.8;
+  font-size: 18px;
+  opacity: 0;
+  animation: fadeIn 1s forwards;
+  animation-delay: 1.8s;
 }
 
-/* Mobile fix */
+@keyframes textUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  to { opacity: 0.9; }
+}
+
+/* MOBILE */
 @media (max-width: 480px) {
   .avatar-wrapper {
-    width: 140px;
-    height: 140px;
+    width: 150px;
+    height: 150px;
   }
 
   .ring, .line {
-    width: 160px;
-    height: 160px;
+    width: 180px;
+    height: 180px;
   }
 
   .name {
-    font-size: 18px;
+    font-size: 20px;
   }
 
   .title {
@@ -126,7 +173,7 @@ body {
   }
 }
 
-/* Canvas pháo hoa */
+/* CANVAS */
 canvas {
   position: fixed;
   top: 0;
@@ -140,8 +187,10 @@ canvas {
 
 <canvas id="fireworks"></canvas>
 
+<div class="bg-particles" id="particles"></div>
+
 <div class="container">
-  <div class="light"></div>
+  <div class="spotlight"></div>
 
   <div class="avatar-wrapper">
     <div class="ring"></div>
@@ -154,9 +203,19 @@ canvas {
 </div>
 
 <script>
-/* FIREWORKS */
-const canvas = document.getElementById('fireworks');
-const ctx = canvas.getContext('2d');
+/* PARTICLE nền */
+const particleContainer = document.getElementById("particles");
+
+for (let i = 0; i < 60; i++) {
+  let span = document.createElement("span");
+  span.style.left = Math.random() * 100 + "vw";
+  span.style.animationDuration = (5 + Math.random() * 5) + "s";
+  particleContainer.appendChild(span);
+}
+
+/* FIREWORK theo nhịp */
+const canvas = document.getElementById("fireworks");
+const ctx = canvas.getContext("2d");
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
@@ -168,8 +227,8 @@ class Particle {
     this.x = x;
     this.y = y;
     this.color = color;
-    this.speedX = (Math.random() - 0.5) * 6;
-    this.speedY = (Math.random() - 0.5) * 6;
+    this.speedX = (Math.random() - 0.5) * 8;
+    this.speedY = (Math.random() - 0.5) * 8;
     this.life = 100;
   }
 
@@ -185,19 +244,22 @@ class Particle {
   }
 }
 
-function createFirework() {
-  let x = Math.random() * canvas.width;
-  let y = Math.random() * canvas.height / 2;
+function fireworkBurst() {
+  let x = canvas.width / 2;
+  let y = canvas.height / 3;
 
-  let color = `hsl(${Math.random() * 360},100%,50%)`;
+  let color = `hsl(${Math.random()*360},100%,60%)`;
 
-  for (let i = 0; i < 80; i++) {
+  for (let i = 0; i < 100; i++) {
     particles.push(new Particle(x, y, color));
   }
 }
 
+/* bắn theo nhịp cinematic */
+setInterval(fireworkBurst, 1500);
+
 function animate() {
-  ctx.fillStyle = "rgba(0,0,0,0.2)";
+  ctx.fillStyle = "rgba(0,0,0,0.25)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   particles.forEach((p, i) => {
@@ -209,10 +271,9 @@ function animate() {
   requestAnimationFrame(animate);
 }
 
-setInterval(createFirework, 800);
 animate();
 
-window.addEventListener('resize', () => {
+window.addEventListener("resize", () => {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 });
